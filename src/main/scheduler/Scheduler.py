@@ -161,7 +161,7 @@ def login_patient(tokens):
     if patient is None:
         print("Login patient failed")
     else:
-        print("Logged in as: " + username)
+        print("Logged in as " + username)
         current_patient = patient
 
 
