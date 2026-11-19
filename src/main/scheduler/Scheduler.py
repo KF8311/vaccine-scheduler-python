@@ -24,14 +24,14 @@ def create_patient(tokens):
     # create_patient <username> <password>
     # check 1: the length for tokens need to be exactly 3 to include all information (with the operation name)
     if len(tokens) != 3:
-            print("Failed to create user.")
+            print("Create patient failed")
             return
     
     username = tokens[1]
     password = tokens[2]
     # check 2: check if the username has been taken already
     if username_exists_patient(username):
-            print("Username taken, try again!")
+            print("Username taken, try again")
             return
     
     salt = Util.generate_salt()
@@ -63,7 +63,7 @@ def create_caregiver(tokens):
     password = tokens[2]
     # check 2: check if the username has been taken already
     if username_exists_caregiver(username):
-        print("Username taken, try again!")
+        print("Username taken, try again")
         return
 
     salt = Util.generate_salt()
@@ -135,13 +135,13 @@ def login_patient(tokens):
     TODO: Part 1
     """
     global current_patient
-    if current_patient is not None or current_patient is not None:
-        print("User already logged in, try again.")
+    if current_patient is not None or current_caregiver is not None:
+        print("User already logged in, try again")
         return
 
     # check 2: the length for tokens need to be exactly 3 to include all information (with the operation name)
     if len(tokens) != 3:
-        print("Login patient failed.")
+        print("Login patient failed")
         return
 
     username = tokens[1]
@@ -151,17 +151,17 @@ def login_patient(tokens):
     try:
         patient = Patient(username, password=password).get()
     except sqlite3.Error as e:
-        print("Login patient failed.")
+        print("Login patient failed")
         return
     except Exception as e:
-        print("Login patient failed.")
+        print("Login patient failed")
         return
 
     # check if the login was successful
     if patient is None:
-        print("Login patient failed.")
+        print("Login patient failed")
     else:
-        print("Logged in as: " + username)
+        print("Logged in as " + username)
         current_patient = patient
 
 
@@ -170,7 +170,7 @@ def login_caregiver(tokens):
     # check 1: if someone's already logged-in, they need to log out first
     global current_caregiver
     if current_caregiver is not None or current_patient is not None:
-        print("User already logged in, try again.")
+        print("User already logged in, try again")
         return
 
     # check 2: the length for tokens need to be exactly 3 to include all information (with the operation name)
@@ -195,7 +195,7 @@ def login_caregiver(tokens):
     if caregiver is None:
         print("Login failed.")
     else:
-        print("Logged in as: " + username)
+        print("Logged in as " + username)
         current_caregiver = caregiver
 
 
