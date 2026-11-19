@@ -21,7 +21,35 @@ def create_patient(tokens):
     """
     TODO: Part 1
     """
-    pass
+    # create_patient <username> <password>
+    # check 1: the length for tokens need to be exactly 3 to include all information (with the operation name)
+    if len(tokens) != 3:
+            print("Failed to create user.")
+            return
+    
+    username = tokens[1]
+    password = tokens[2]
+    # check 2: check if the username has been taken already
+    if username_exists_patient(username):
+            print("Username taken, try again!")
+            return
+    
+    salt = Util.generate_salt()
+    hash = Util.generate_hash(password, salt)
+    
+    # create the patient
+    patient = Patient(username, salt=salt, hash=hash)
+    
+    # save to patient information to our database
+    try:
+        patient.save_to_db()
+    except sqlite3.Error as e:
+        print("Create patient failed.")
+        return
+    except Exception as e:
+        print("Create patient failed.")
+        return
+    print("Created user", username)
 
 
 def create_caregiver(tokens):
@@ -55,6 +83,28 @@ def create_caregiver(tokens):
         return
     print("Created user", username)
 
+def username_exists_patient(username):
+    cm = ConnectionManager()
+    conn = cm.create_connection()
+
+    select_username = "SELECT * FROM Patients WHERE Username = ?"
+    try:
+        cursor = conn.cursor()
+        cursor.execute(select_username, (username,))
+        #  returns false if the cursor is not before the first record or if there are no rows in the ResultSet.
+        for row in cursor:
+            cm.close_connection()
+            return row['Username'] is not None
+    except sqlite3.Error as e:
+        print("Error occurred when checking username")
+        cm.close_connection()
+        return True
+    except Exception as e:
+        print("Error occurred when checking username")
+        cm.close_connection()
+        return True
+    cm.close_connection()
+    return False
 
 def username_exists_caregiver(username):
     cm = ConnectionManager()
@@ -84,7 +134,35 @@ def login_patient(tokens):
     """
     TODO: Part 1
     """
-    pass
+    global current_patient
+    if current_patient is not None or current_patient is not None:
+        print("User already logged in, try again.")
+        return
+
+    # check 2: the length for tokens need to be exactly 3 to include all information (with the operation name)
+    if len(tokens) != 3:
+        print("Login patient failed.")
+        return
+
+    username = tokens[1]
+    password = tokens[2]
+
+    patient = None
+    try:
+        patient = Patient(username, password=password).get()
+    except sqlite3.Error as e:
+        print("Login patient failed.")
+        return
+    except Exception as e:
+        print("Login patient failed.")
+        return
+
+    # check if the login was successful
+    if patient is None:
+        print("Login patient failed.")
+    else:
+        print("Logged in as: " + username)
+        current_patient = patient
 
 
 def login_caregiver(tokens):
@@ -92,7 +170,7 @@ def login_caregiver(tokens):
     # check 1: if someone's already logged-in, they need to log out first
     global current_caregiver
     if current_caregiver is not None or current_patient is not None:
-        print("User already logged in.")
+        print("User already logged in, try again.")
         return
 
     # check 2: the length for tokens need to be exactly 3 to include all information (with the operation name)
