@@ -67,9 +67,9 @@ def seed():
 
         # 2. Caregivers (Username, Salt, Hash)
         caregivers_raw = [
-            ("c1", "Pass123!"),
-            ("c2", "Pass123!"),
-            ("c3", "Pass123!"),
+            ("c1", "123456"),
+            ("c2", "123456"),
+            ("c3", "123456"),
         ]
         for username, plain_pw in caregivers_raw:
             salt, pwd_hash = hash_password(plain_pw)
@@ -80,8 +80,8 @@ def seed():
 
         # 3. Patients (Username, Salt, Hash)
         patients_raw = [
-            ("p1", "Pass123!"),
-            ("p2", "Pass123!"),
+            ("p1", "123456"),
+            ("p2", "123456"),
         ]
         for username, plain_pw in patients_raw:
             salt, pwd_hash = hash_password(plain_pw)

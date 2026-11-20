@@ -249,8 +249,8 @@ def search_caregiver_schedule(tokens):
     if (len(vaccines) is 0):
         print("No vaccines available")
     else:
-        for availability in availabilities:
-                    print(f"{availability.caretaker_username} {availability.available_doses}")
+        for vaccine in vaccines:
+            print(f"{vaccine.vaccine_name} {vaccine.available_doses}")
 
 
 def reserve(tokens):
