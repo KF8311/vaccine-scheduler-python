@@ -70,3 +70,17 @@ class Reservation:
                 raise
             finally:
                 cm.close_connection()
+    
+    def delete_from_db(self):
+        cm = ConnectionManager()
+        conn = cm.create_connection()
+        cursor = conn.cursor()
+
+        remove_reservation = "DELETE FROM Reservations WHERE rid = ?"
+        try:
+            cursor.execute(remove_reservation, (self.rid,))
+            conn.commit()
+        except sqlite3.Error as e:
+            raise e
+        finally:
+            cm.close_connection()
