@@ -95,6 +95,24 @@ class Vaccine:
             raise
         finally:
             cm.close_connection()
+            
+    @classmethod
+    def get_all_available(cls):
+        cm = ConnectionManager()
+        conn = cm.create_connection()
+        cursor = conn.cursor()
+
+        get_vaccines = "SELECT Name, Doses FROM Vaccines WHERE Doses > 0"
+        vaccines = []
+        try:
+            cursor.execute(get_vaccines)
+            for row in cursor:
+                vaccines.append(cls(row[0], row[1]))
+            return vaccines
+        except sqlite3.Error:
+            raise
+        finally:
+            cm.close_connection()
 
     def __str__(self):
         return f"(Vaccine Name: {self.vaccine_name}, Available Doses: {self.available_doses})"

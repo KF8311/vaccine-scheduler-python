@@ -6,7 +6,6 @@ from util.Util import Util
 from db.ConnectionManager import ConnectionManager
 
 class Availability:
-    pass
 
     def __init__(self, caretaker_username, time):
         self.caretaker_username = caretaker_username  
@@ -31,6 +30,27 @@ class Availability:
             self.caretaker_username = row["Username"]
             self.time = row["Time"]
             return self
+        except sqlite3.Error as e:
+            raise e
+        finally:
+            cm.close_connection()
+            
+            
+    @classmethod
+    def get_by_date(cls, date):
+        cm = ConnectionManager()
+        conn = cm.create_connection()
+        cursor = conn.cursor()
+
+        get_availabilities = """
+            SELECT *
+            FROM Availabilities
+            WHERE Time LIKE ?
+        """
+        try:
+            cursor.execute(get_availabilities, (f"{date}%",))
+            rows = cursor.fetchall()
+            return [cls(row["Username"], row["Time"]) for row in rows]
         except sqlite3.Error as e:
             raise e
         finally:

@@ -1,3 +1,4 @@
+from model.Availability import Availability
 from model.Vaccine import Vaccine
 from model.Caregiver import Caregiver
 from model.Patient import Patient
@@ -204,6 +205,52 @@ def search_caregiver_schedule(tokens):
     TODO: Part 2
     """
     pass
+    # search_caregiver_schedule <date>
+    # check 1: is the current logged-in user a patient? if not, they need to log in first
+    global current_caregiver
+    if (current_caregiver is not None or current_patient is not None) == False:
+        print("Please login first")
+        return
+
+    # check 2: the length for tokens need to be exactly 2 to include all information (with the operation name)
+    if len(tokens) != 2:
+        print("Please try again")
+        return
+
+    date = tokens[1]
+
+    caregiver = None
+    try:
+        availabilities = Availability.get_by_date(date)
+    except sqlite3.Error as e:
+        print("Please try again")
+        return
+    except Exception as e:
+        print("Please try again")
+        return
+
+    try:
+        vaccines = Vaccine.get_all_available()
+    except sqlite3.Error as e:
+        print("Please try again")
+        return
+    except Exception as e:
+        print("Please try again")
+        return
+
+    # check availability and vaccine availability
+    print("Caregiver:")
+    if len(availabilities) is 0:
+        print("No caregivers available")
+    else:
+        for availability in availabilities:
+            print(f"{availability.caretaker_username}")
+    print("Vaccines:")
+    if (len(vaccines) is 0):
+        print("No vaccines available")
+    else:
+        for availability in availabilities:
+                    print(f"{availability.caretaker_username} {availability.available_doses}")
 
 
 def reserve(tokens):
