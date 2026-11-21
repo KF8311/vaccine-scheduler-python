@@ -1,18 +1,18 @@
-from model.Availability import Availability
 from model.Vaccine import Vaccine
 from model.Caregiver import Caregiver
 from model.Patient import Patient
+from model.Reservation import Reservation
+from model.Availability import Availability
 from util.Util import Util
 from db.ConnectionManager import ConnectionManager
 import sqlite3
 import datetime
 
-
-'''
+"""
 objects to keep track of the currently logged-in user
 Note: it is always true that at most one of currentCaregiver and currentPatient is not null
         since only one user can be logged-in at a time
-'''
+"""
 current_patient = None
 
 current_caregiver = None
@@ -25,22 +25,22 @@ def create_patient(tokens):
     # create_patient <username> <password>
     # check 1: the length for tokens need to be exactly 3 to include all information (with the operation name)
     if len(tokens) != 3:
-            print("Create patient failed")
-            return
-    
+        print("Create patient failed")
+        return
+
     username = tokens[1]
     password = tokens[2]
     # check 2: check if the username has been taken already
     if username_exists_patient(username):
-            print("Username taken, try again")
-            return
-    
+        print("Username taken, try again")
+        return
+
     salt = Util.generate_salt()
     hash = Util.generate_hash(password, salt)
-    
+
     # create the patient
     patient = Patient(username, salt=salt, hash=hash)
-    
+
     # save to patient information to our database
     try:
         patient.save_to_db()
@@ -84,6 +84,7 @@ def create_caregiver(tokens):
         return
     print("Created user", username)
 
+
 def username_exists_patient(username):
     cm = ConnectionManager()
     conn = cm.create_connection()
@@ -95,7 +96,7 @@ def username_exists_patient(username):
         #  returns false if the cursor is not before the first record or if there are no rows in the ResultSet.
         for row in cursor:
             cm.close_connection()
-            return row['Username'] is not None
+            return row["Username"] is not None
     except sqlite3.Error as e:
         print("Error occurred when checking username")
         cm.close_connection()
@@ -106,6 +107,7 @@ def username_exists_patient(username):
         return True
     cm.close_connection()
     return False
+
 
 def username_exists_caregiver(username):
     cm = ConnectionManager()
@@ -118,7 +120,7 @@ def username_exists_caregiver(username):
         #  returns false if the cursor is not before the first record or if there are no rows in the ResultSet.
         for row in cursor:
             cm.close_connection()
-            return row['Username'] is not None
+            return row["Username"] is not None
     except sqlite3.Error as e:
         print("Error occurred when checking username")
         cm.close_connection()
@@ -204,10 +206,8 @@ def search_caregiver_schedule(tokens):
     """
     TODO: Part 2
     """
-    pass
     # search_caregiver_schedule <date>
     # check 1: is the current logged-in user a patient? if not, they need to log in first
-    global current_caregiver
     if (current_caregiver is not None or current_patient is not None) == False:
         print("Please login first")
         return
@@ -218,8 +218,6 @@ def search_caregiver_schedule(tokens):
         return
 
     date = tokens[1]
-
-    caregiver = None
     try:
         availabilities = Availability.get_by_date(date)
     except sqlite3.Error as e:
@@ -240,13 +238,13 @@ def search_caregiver_schedule(tokens):
 
     # check availability and vaccine availability
     print("Caregiver:")
-    if len(availabilities) is 0:
+    if len(availabilities) == 0:
         print("No caregivers available")
     else:
         for availability in availabilities:
             print(f"{availability.caretaker_username}")
     print("Vaccines:")
-    if (len(vaccines) is 0):
+    if len(vaccines) is 0:
         print("No vaccines available")
     else:
         for vaccine in vaccines:
@@ -257,7 +255,54 @@ def reserve(tokens):
     """
     TODO: Part 2
     """
-    pass
+    # If no user is logged in, print “Please login first” and return.
+    if (current_caregiver is not None or current_patient is not None) == False:
+        print("Please login first")
+        return
+    # If the current user logged in is not a patient, print “Please login as a patient” and return.
+    if current_patient is None:
+        print("Please login as a patient")
+        return
+
+    # check 2: the length for tokens need to be exactly 3 to include all information (with the operation name)
+    if len(tokens) != 3:
+        print("Please try again")
+        return
+
+    date = tokens[1]
+    vaccine_name = tokens[2]
+    try:
+        availabilities = Availability.get_by_date(date)
+    except sqlite3.Error as e:
+        print("Please try again")
+        return
+    except Exception as e:
+        print("Please try again")
+        return
+
+    try:
+        vaccine = Vaccine(vaccine_name, None).get()
+    except Exception:
+        print("Please try again")
+        return
+
+    # check availability and vaccine availability
+    if len(availabilities) == 0:
+        print("No caregivers available")
+    elif vaccine is None or vaccine.available_doses <= 0:
+        print("Not enough available doses")
+    else:
+        avail = availabilities[0]
+        reservation = Reservation(
+            None, date, current_patient.username, vaccine_name, avail.caretaker_username
+        )
+        reservation.save_to_db()
+        vaccine.decrease_available_doses(1)
+        avail.delete_from_db()
+        rid = reservation.get_rid()  # since it processed after save to db
+        print(
+            f"Appointment ID {rid}, Caregiver username {reservation.caretaker_username}"
+        )
 
 
 def upload_availability(tokens):
@@ -352,9 +397,9 @@ def add_doses(tokens):
 
 
 def show_appointments(tokens):
-    '''
+    """
     TODO: Part 2
-    '''
+    """
     pass
 
 
@@ -368,11 +413,17 @@ def logout(tokens):
 def start():
     stop = False
     print("*** Please enter one of the following commands ***")
-    print("> create_patient <username> <password>")  # //TODO: implement create_patient (Part 1)
+    print(
+        "> create_patient <username> <password>"
+    )  # //TODO: implement create_patient (Part 1)
     print("> create_caregiver <username> <password>")
-    print("> login_patient <username> <password>")  # // TODO: implement login_patient (Part 1)
+    print(
+        "> login_patient <username> <password>"
+    )  # // TODO: implement login_patient (Part 1)
     print("> login_caregiver <username> <password>")
-    print("> search_caregiver_schedule <date>")  # // TODO: implement search_caregiver_schedule (Part 2)
+    print(
+        "> search_caregiver_schedule <date>"
+    )  # // TODO: implement search_caregiver_schedule (Part 2)
     print("> reserve <date> <vaccine>")  # // TODO: implement reserve (Part 2)
     print("> upload_availability <date>")
     print("> cancel <appointment_id>")  # // TODO: implement cancel (extra credit)
@@ -383,7 +434,7 @@ def start():
     print()
     while not stop:
         response = ""
-        print("> ", end='')
+        print("> ", end="")
 
         try:
             response = str(input())

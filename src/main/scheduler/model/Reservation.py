@@ -46,7 +46,10 @@ class Reservation:
     
     def get_time(self):
         return self.time
-            
+    
+    def get_rid(self):
+        return self.rid
+
     def get_patient_username(self):
         return self.patient_username
 
@@ -64,6 +67,8 @@ class Reservation:
             add_reservation = "INSERT INTO Reservations VALUES (?, ?, ?, ?, ?)"
             try:
                 cursor.execute(add_reservation, (self.rid, self.time, self.patient_username, self.vaccine_name, self.caretaker_username))
+                if self.rid is None:
+                    self.rid = cursor.lastrowid
                 # you must call commit() to persist your data if you don't set autocommit to True
                 conn.commit()
             except sqlite3.Error:

@@ -11,6 +11,11 @@ if str(SRC_DIR) not in sys.path:
 
 from db.ConnectionManager import ConnectionManager
 
+# Adjust path if create.sql lives in .../src/db, .../src/main, or repo root
+SCHEMA_PATH = Path(
+    r"C:\Users\lambo\UW\CSE414\homework\hw6\vaccine-scheduler-python\src\main\resources\sqlite\create.sql"
+)
+
 
 def hash_password(password: str):
     salt = os.urandom(16)
@@ -22,6 +27,13 @@ def hash_password(password: str):
         dklen=16,
     )
     return salt, pwd_hash
+
+
+def apply_schema(cursor, schema_path: Path):
+    if not schema_path.exists():
+        raise FileNotFoundError(f"Schema file not found: {schema_path}")
+    sql_script = schema_path.read_text(encoding="utf-8")
+    cursor.executescript(sql_script)
 
 
 def clear_database(cursor):
@@ -41,7 +53,7 @@ def clear_database(cursor):
         pass
 
 
-def seed():
+def seed(schema_path: Path = SCHEMA_PATH):
     cm = ConnectionManager()
     conn = cm.create_connection()
     if conn is None:
@@ -50,8 +62,9 @@ def seed():
     cursor = conn.cursor()
 
     try:
-        # In SQLite, PRAGMA foreign_keys is best toggled outside an active transaction
+        # In SQLite, PRAGMA foreign_keys and executescript() work best outside an active transaction
         cursor.execute("PRAGMA foreign_keys = OFF;")
+        apply_schema(cursor, schema_path)
         clear_database(cursor)
 
         # 1. Vaccines (Name, Doses)
@@ -116,7 +129,7 @@ def seed():
 
         conn.commit()
         cursor.execute("PRAGMA foreign_keys = ON;")
-        print("Database cleared and seeded with sample data successfully.")
+        print(f"Applied schema from {schema_path} and seeded database successfully.")
     except Exception:
         conn.rollback()
         cursor.execute("PRAGMA foreign_keys = ON;")
