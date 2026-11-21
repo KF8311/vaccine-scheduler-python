@@ -18,6 +18,37 @@ current_patient = None
 current_caregiver = None
 
 
+def has_mixed_case(s: str) -> bool:
+    return any(ch.isupper() for ch in s) and any(ch.islower() for ch in s)
+
+def has_num_alpha(s: str) -> bool:
+    return any(ch.isdigit() for ch in s) and any(ch.isalpha() for ch in s)
+
+
+def has_special_character(s: str) -> bool:
+    return (
+        any(ch == "!" for ch in s)
+        or any(ch == "@" for ch in s)
+        or any(ch == "#" for ch in s)
+        or any(ch == "?" for ch in s)
+    )
+
+
+def strong_password(password: str) -> bool:
+    """
+    bonus
+    """
+    if len(password) < 8:
+        return False
+    if has_mixed_case(password) == False:
+        return False
+    if has_num_alpha(password) == False:
+        return False
+    if has_special_character(password) == False:
+        return False
+    return True
+
+
 def create_patient(tokens):
     """
     TODO: Part 1
@@ -33,6 +64,10 @@ def create_patient(tokens):
     # check 2: check if the username has been taken already
     if username_exists_patient(username):
         print("Username taken, try again")
+        return
+    
+    if not strong_password(password):
+        print('Create patient failed, please use a strong password (8+ char, at least one upper and one lower, at least one letter and one number, and at least one special character, from "!", "@", "#", "?")')
         return
 
     salt = Util.generate_salt()
@@ -65,6 +100,9 @@ def create_caregiver(tokens):
     # check 2: check if the username has been taken already
     if username_exists_caregiver(username):
         print("Username taken, try again")
+        return
+    if not strong_password(password):
+        print('Create caregiver failed, please use a strong password (8+ char, at least one upper and one lower, at least one letter and one number, and at least one special character, from "!", "@", "#", "?")')
         return
 
     salt = Util.generate_salt()
@@ -415,13 +453,11 @@ def show_appointments(tokens):
         except Exception as e:
             print("Please try again")
             return
-        if (len(reservations) == 0):
+        if len(reservations) == 0:
             print("No appointments found")
             return
         for r in reservations:
-            print(
-                f"{r.rid} {r.vaccine_name} {r.time} {r.caretaker_username}"
-            )
+            print(f"{r.rid} {r.vaccine_name} {r.time} {r.caretaker_username}")
         return
     elif current_caregiver is not None:
         # caregiver
@@ -430,13 +466,11 @@ def show_appointments(tokens):
         except Exception as e:
             print("Please try again")
             return
-        if (len(reservations) == 0):
+        if len(reservations) == 0:
             print("No appointments scheduled")
             return
         for r in reservations:
-            print(
-                f"{r.rid} {r.vaccine_name} {r.time} {r.patient_username}"
-            )
+            print(f"{r.rid} {r.vaccine_name} {r.time} {r.patient_username}")
         return
 
 
@@ -444,7 +478,18 @@ def logout(tokens):
     """
     TODO: Part 2
     """
-    pass
+    global current_caregiver
+    global current_patient
+    # If no user is logged in, print “Please login first” and return.
+    if (current_caregiver is not None or current_patient is not None) == False:
+        print("Please login first")
+        return
+    if len(tokens) != 1:
+        print("Please try again")
+        return
+
+    current_caregiver = None
+    current_patient = None
 
 
 def start():
