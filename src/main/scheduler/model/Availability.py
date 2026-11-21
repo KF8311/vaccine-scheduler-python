@@ -61,9 +61,9 @@ class Availability:
                 conn = cm.create_connection()
                 cursor = conn.cursor()
     
-                add_availability = "INSERT INTO Availabilities VALUES (?, ?)"
+                add_availability = "INSERT INTO Availabilities (Time, Username) VALUES (?, ?)"
                 try:
-                    cursor.execute(add_availability, (self.caretaker_username, self.time))
+                    cursor.execute(add_availability, (self.time, self.caretaker_username))
                     # you must call commit() to persist your data if you don't set autocommit to True
                     conn.commit()
                 except sqlite3.Error:

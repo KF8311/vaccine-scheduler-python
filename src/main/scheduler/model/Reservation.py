@@ -89,6 +89,28 @@ class Reservation:
             raise e
         finally:
             cm.close_connection()
+
+    @classmethod
+    def get_by_rid(cls, rid):
+        cm = ConnectionManager()
+        conn = cm.create_connection()
+        cursor = conn.cursor()
+        try:
+            cursor.execute("SELECT * FROM Reservations WHERE rid = ?", (rid,))
+            row = cursor.fetchone()
+            if row is None:
+                return None
+            return cls(
+                rid=row["rid"],
+                time=row["Time"],
+                patient_username=row["pname"],
+                vaccine_name=row["vname"],
+                caretaker_username=row["cname"],
+            )
+        except sqlite3.Error:
+            raise
+        finally:
+            cm.close_connection()
             
     @classmethod
     def get_by_patient(cls, patient_username):

@@ -282,7 +282,7 @@ def search_caregiver_schedule(tokens):
         for availability in availabilities:
             print(f"{availability.caretaker_username}")
     print("Vaccines:")
-    if len(vaccines) is 0:
+    if len(vaccines) == 0:
         print("No vaccines available")
     else:
         for vaccine in vaccines:
@@ -428,7 +428,7 @@ def cancel(tokens):
         
     elif current_patient is not None:
         if current_patient.username == patient:
-            time = reservation.get_time(reservation)
+            time = reservation.get_time()
             vaccine_name = reservation.get_vaccine_name()
             vaccine = Vaccine(vaccine_name, None).get()
             if vaccine is not None:
@@ -552,6 +552,7 @@ def logout(tokens):
 
     current_caregiver = None
     current_patient = None
+    print("Successfully logged out")
 
 
 def start():
