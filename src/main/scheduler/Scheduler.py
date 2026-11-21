@@ -381,7 +381,69 @@ def cancel(tokens):
     """
     TODO: Extra Credit
     """
-    pass
+    # If no user is logged in, print “Please login first” and return.
+    if (current_caregiver is not None or current_patient is not None) == False:
+        print("Please login first")
+        return
+
+    # check 2: the length for tokens need to be exactly 3 to include all information (with the operation name)
+    if len(tokens) != 2:
+        print("Please try again")
+        return
+
+    rid = tokens[1]
+    try:
+        rid = int(tokens[1])
+        reservation = Reservation.get_by_rid(rid)
+    except sqlite3.Error as e:
+        print("Please try again")
+        return
+    except Exception as e:
+        print("Please try again")
+        return
+    if reservation is None:
+        print(f"Appointment ID {rid} does not exist")
+        return
+    
+    patient = reservation.get_patient_username()
+    caretaker = reservation.get_caretaker_username()
+    
+    
+    if current_caregiver is not None:
+        if current_caregiver.username == caretaker:
+            time = reservation.get_time()
+            vaccine_name = reservation.get_vaccine_name()
+            vaccine = Vaccine(vaccine_name, None).get()
+            if vaccine is not None:
+                vaccine.increase_available_doses(1)
+            avail = Availability(caretaker, time)
+            avail.save_to_db()
+            reservation.delete_from_db()
+            print(f"Appointment ID {rid} has been successfully canceled")
+            return
+        else:
+            print(f"Appointment ID {rid} does not exist")
+            return
+        
+        
+    elif current_patient is not None:
+        if current_patient.username == patient:
+            time = reservation.get_time(reservation)
+            vaccine_name = reservation.get_vaccine_name()
+            vaccine = Vaccine(vaccine_name, None).get()
+            if vaccine is not None:
+                vaccine.increase_available_doses(1)
+            avail = Availability(caretaker, time)
+            avail.save_to_db()
+            reservation.delete_from_db()
+            print(f"Appointment ID {rid} has been successfully canceled")
+            return
+        else:
+            print(f"Appointment ID {rid} does not exist")
+            return
+    else:
+        print(f"Appointment ID {rid} does not exist")
+        return
 
 
 def add_doses(tokens):
