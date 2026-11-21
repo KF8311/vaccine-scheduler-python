@@ -25,10 +25,10 @@ CREATE TABLE Vaccines (
 );
 
 CREATE TABLE Reservations (
-    rid int,
+    rid INTEGER PRIMARY KEY,
     Time date,
     pname varchar(255) REFERENCES Patients,
-    cname varchar(255) REFERENCES Caregivers,
     vname varchar(255) REFERENCES Vaccines,
-    PRIMARY KEY (rid)
+    cname varchar(255) REFERENCES Caregivers  
+
 );
