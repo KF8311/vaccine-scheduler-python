@@ -400,7 +400,44 @@ def show_appointments(tokens):
     """
     TODO: Part 2
     """
-    pass
+    # If no user is logged in, print “Please login first” and return.
+    if (current_caregiver is not None or current_patient is not None) == False:
+        print("Please login first")
+        return
+    if len(tokens) != 1:
+        print("Please try again")
+        return
+    # If the current user logged in is not a patient, print “Please login as a patient” and return.
+    if current_patient is not None:
+        # patient
+        try:
+            reservations = Reservation.get_by_patient(current_patient.username)
+        except Exception as e:
+            print("Please try again")
+            return
+        if (len(reservations) == 0):
+            print("No appointments found")
+            return
+        for r in reservations:
+            print(
+                f"{r.rid} {r.vaccine_name} {r.time} {r.caretaker_username}"
+            )
+        return
+    elif current_caregiver is not None:
+        # caregiver
+        try:
+            reservations = Reservation.get_by_caretaker(current_caregiver.username)
+        except Exception as e:
+            print("Please try again")
+            return
+        if (len(reservations) == 0):
+            print("No appointments scheduled")
+            return
+        for r in reservations:
+            print(
+                f"{r.rid} {r.vaccine_name} {r.time} {r.patient_username}"
+            )
+        return
 
 
 def logout(tokens):

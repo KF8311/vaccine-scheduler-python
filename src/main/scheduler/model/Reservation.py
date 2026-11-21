@@ -89,3 +89,54 @@ class Reservation:
             raise e
         finally:
             cm.close_connection()
+            
+    @classmethod
+    def get_by_patient(cls, patient_username):
+        cm = ConnectionManager()
+        conn = cm.create_connection()
+        cursor = conn.cursor()
+        # Order the results by rid in ascending order
+        get_reservations_by_patient = "SELECT * FROM Reservations WHERE pname = ? ORDER BY rid ASC"
+        try:
+            cursor.execute(get_reservations_by_patient, (patient_username,))
+            rows = cursor.fetchall()
+            return [
+                cls(
+                    rid=row["rid"],
+                    time=row["Time"],
+                    patient_username=row["pname"],
+                    vaccine_name=row["vname"],
+                    caretaker_username=row["cname"],
+                )
+                for row in rows
+            ]
+        except sqlite3.Error as e:
+            raise e
+        finally:
+            cm.close_connection()
+
+    @classmethod
+    def get_by_caretaker(cls, caretaker_username):
+        cm = ConnectionManager()
+        conn = cm.create_connection()
+        cursor = conn.cursor()
+
+        # Order the results by rid in ascending order
+        get_reservations_by_caretaker = "SELECT * FROM Reservations WHERE cname = ? ORDER BY rid ASC"
+        try:
+            cursor.execute(get_reservations_by_caretaker, (caretaker_username,))
+            rows = cursor.fetchall()
+            return [
+                cls(
+                    rid=row["rid"],
+                    time=row["Time"],
+                    patient_username=row["pname"],
+                    vaccine_name=row["vname"],
+                    caretaker_username=row["cname"],
+                )
+                for row in rows
+            ]
+        except sqlite3.Error as e:
+            raise e
+        finally:
+            cm.close_connection()
