@@ -25,4 +25,10 @@ python -c "import sqlite3; conn = sqlite3.connect('database/hw6.db'); conn.execu
 ```
 
 Set the path:
-```conda env config vars set DBPATH="C:/Users/lambo/UW/CSE414/homework/hw6/vaccine-scheduler-python/database/hw6.db"```
+```bash 
+conda env config vars set DBPATH="C:/Users/lambo/UW/CSE414/homework/hw6/vaccine-scheduler-python/database/hw6.db"```
+
+Test the code:
+```bash
+python -m unittest discover -s . -p "test.py" -v 
+```
