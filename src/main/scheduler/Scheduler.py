@@ -21,6 +21,7 @@ current_caregiver = None
 def has_mixed_case(s: str) -> bool:
     return any(ch.isupper() for ch in s) and any(ch.islower() for ch in s)
 
+
 def has_num_alpha(s: str) -> bool:
     return any(ch.isdigit() for ch in s) and any(ch.isalpha() for ch in s)
 
@@ -65,9 +66,11 @@ def create_patient(tokens):
     if username_exists_patient(username):
         print("Username taken, try again")
         return
-    
+
     if not strong_password(password):
-        print('Create patient failed, please use a strong password (8+ char, at least one upper and one lower, at least one letter and one number, and at least one special character, from "!", "@", "#", "?")')
+        print(
+            'Create patient failed, please use a strong password (8+ char, at least one upper and one lower, at least one letter and one number, and at least one special character, from "!", "@", "#", "?")'
+        )
         return
 
     salt = Util.generate_salt()
@@ -102,7 +105,9 @@ def create_caregiver(tokens):
         print("Username taken, try again")
         return
     if not strong_password(password):
-        print('Create caregiver failed, please use a strong password (8+ char, at least one upper and one lower, at least one letter and one number, and at least one special character, from "!", "@", "#", "?")')
+        print(
+            'Create caregiver failed, please use a strong password (8+ char, at least one upper and one lower, at least one letter and one number, and at least one special character, from "!", "@", "#", "?")'
+        )
         return
 
     salt = Util.generate_salt()
@@ -404,11 +409,10 @@ def cancel(tokens):
     if reservation is None:
         print(f"Appointment ID {rid} does not exist")
         return
-    
+
     patient = reservation.get_patient_username()
     caretaker = reservation.get_caretaker_username()
-    
-    
+
     if current_caregiver is not None:
         if current_caregiver.username == caretaker:
             time = reservation.get_time()
@@ -424,8 +428,7 @@ def cancel(tokens):
         else:
             print(f"Appointment ID {rid} does not exist")
             return
-        
-        
+
     elif current_patient is not None:
         if current_patient.username == patient:
             time = reservation.get_time()
@@ -553,6 +556,7 @@ def logout(tokens):
     current_caregiver = None
     current_patient = None
     print("Successfully logged out")
+    return
 
 
 def start():
@@ -587,11 +591,13 @@ def start():
             print("Please try again!")
             break
 
-        response = response.lower()
-        tokens = response.split(" ")
+        tokens = response.lower().strip().split()
         if len(tokens) == 0:
             ValueError("Please try again!")
             continue
+        # Pass password without lowercasing it
+        if tokens[0] in ("create_patient", "create_caregiver", "login_patient", "login_caregiver") and len(tokens) >= 3:
+            tokens[2] = response.strip().split()[2]
         operation = tokens[0]
         if operation == "create_patient":
             create_patient(tokens)
